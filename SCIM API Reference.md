@@ -87,18 +87,6 @@ ACCESS_TOKEN=$(curl -ks -X POST "${KEYCLOAK_URL}/realms/${REALM_NAME}/protocol/o
   -d "grant_type=client_credentials&client_id=${CLIENT_ID}&client_secret=${CLIENT_SECRET}" \
   | jq -r .access_token)
 ```
-
----
-
-# Retrieve SCIM Groups
-
-```bash
-# Query all SCIM groups from the realm
-curl -k -X GET "${KEYCLOAK_URL}/realms/${REALM_NAME}/scim/v2/Groups" \
-  -H "Authorization: Bearer ${ACCESS_TOKEN}" \
-  -H "Accept: application/scim+json"
-```
-
 ---
 
 # Create a SCIM User
@@ -191,6 +179,62 @@ curl -vk -X GET "${KEYCLOAK_URL}/realms/${REALM_NAME}/scim/v2/ResourceTypes" \
 
 ---
 
+# Retrieve SCIM Groups
+
+```bash
+# Query all SCIM groups from the realm
+curl -k -X GET "${KEYCLOAK_URL}/realms/${REALM_NAME}/scim/v2/Groups" \
+  -H "Authorization: Bearer ${ACCESS_TOKEN}" \
+  -H "Accept: application/scim+json"
+```
+# SCIM API Validation and Troubleshooting
+
+## Validate SCIM Service Provider Configuration
+
+```bash
+curl -k -X GET \
+  "${KEYCLOAK_URL}/realms/${REALM_NAME}/scim/v2/ServiceProviderConfig" \
+  -H "Authorization: Bearer ${ACCESS_TOKEN}" | jq
+```
+
+Expected result:
+
+* `"filter":{"supported":true}`
+* SCIM endpoints available
+* OAuth bearer authentication enabled
+---
+
+# Retrieve Single SCIM Group by ID
+
+Example:
+
+```bash
+curl -k -X GET \
+  "${KEYCLOAK_URL}/realms/${REALM_NAME}/scim/v2/Groups/a6d0ff9c-e747-400c-b3ee-c5469498205b" \
+  -H "Authorization: Bearer ${ACCESS_TOKEN}" | jq
+```
+
+---
+
+# Retrieve Group Members via Admin API
+
+Example:
+
+```bash
+curl -k -X GET \
+  "${KEYCLOAK_URL}/admin/realms/${REALM_NAME}/groups/a6d0ff9c-e747-400c-b3ee-c5469498205b/members" \
+  -H "Authorization: Bearer ${ACCESS_TOKEN}" | jq
+```
+
+```bash
+FILTER='displayName eq "Arsenal"'
+
+curl -k -G \
+  "${KEYCLOAK_URL}/realms/${REALM_NAME}/scim/v2/Groups" \
+  --data-urlencode "filter=${FILTER}" \
+  -H "Authorization: Bearer ${ACCESS_TOKEN}" | jq
+```
+---
 # Bulk User-to-Group Assignment Script
 
 ```bash
